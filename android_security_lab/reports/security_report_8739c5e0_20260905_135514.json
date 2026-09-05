@@ -1,0 +1,61 @@
+{
+  "device_id": "8739c5e0",
+  "device_name": "Demo Phone",
+  "timestamp": "2026-09-05T13:55:14.884606",
+  "authorized": true,
+  "score": 50,
+  "findings": [
+    {
+      "id": "f1e3888a",
+      "severity": "INFO",
+      "title": "Device Authorization Verified",
+      "description": "Device Demo Phone is properly authorized.",
+      "recommendation": "Continue using explicit authorization for device access.",
+      "category": "authorization"
+    },
+    {
+      "id": "102d616a",
+      "severity": "MEDIUM",
+      "title": "Authorization Expiring Soon",
+      "description": "Device authorization expires in 0 days.",
+      "recommendation": "Plan to re-authorize the device before expiry.",
+      "category": "authorization"
+    },
+    {
+      "id": "a8774f98",
+      "severity": "HIGH",
+      "title": "Plaintext Authentication Enabled",
+      "description": "The /auth/plaintext endpoint sends passwords in cleartext.",
+      "recommendation": "Disable plaintext authentication or enforce HTTPS.",
+      "category": "authentication"
+    },
+    {
+      "id": "d79b4b5c",
+      "severity": "MEDIUM",
+      "title": "Hashing Without Salt",
+      "description": "The /auth/hash endpoint uses SHA-256 without salt.",
+      "recommendation": "Use PBKDF2, bcrypt, or Argon2 with proper salting.",
+      "category": "authentication"
+    },
+    {
+      "id": "b0793bd8",
+      "severity": "HIGH",
+      "title": "Default API Key in Use",
+      "description": "Using default development API key.",
+      "recommendation": "Generate and use a unique API key for production.",
+      "category": "configuration"
+    }
+  ],
+  "recommendations": [
+    "Address all HIGH severity findings immediately.",
+    "Review and strengthen authentication mechanisms.",
+    "Review application configuration for security best practices."
+  ],
+  "summary": {
+    "total_findings": 5,
+    "high_severity": 2,
+    "medium_severity": 2,
+    "low_severity": 0,
+    "info": 1
+  }
+}

@@ -1,0 +1,23 @@
+{
+    "voice": "en-GB-RyanNeural",
+    "jarvis_effect": true,
+    "pitch_semitones": -1.5,
+    "reverb_mix": 0.12,
+    "reverb_delay_ms": 18,
+    "reverb_decay": 0.4,
+    "presence_boost": 1.08,
+    "compression": 1.3,
+    "limiter_threshold": 0.85,
+    "limiter_output": 0.95,
+    "ring_mod_enabled": false,
+    "ring_mod_freq": 50,
+    "ring_mod_depth": 0.0,
+    "bitcrush_enabled": false,
+    "bitcrush_bits": 16,
+    "flanger_enabled": false,
+    "flanger_rate": 0.3,
+    "flanger_depth": 0.001,
+    "chorus_enabled": false,
+    "chorus_rate": 0.5,
+    "chorus_depth": 0.1
+}

@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>NEMESIS</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:     #0a0a0a;
+      --card:   rgba(0,255,65,0.03);
+      --border: rgba(0,255,65,0.12);
+      --accent: #00ff41;
+      --adim:   rgba(0,255,65,0.10);
+      --text:   #00ff41;
+      --muted:  #1a5a1a;
+    }
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Courier New', 'Consolas', monospace;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .card {
+      width: 340px;
+      padding: 44px 36px;
+      background: rgba(0,255,65,0.02);
+      border: 1px solid rgba(0,255,65,0.15);
+      border-radius: 4px;
+      text-align: center;
+    }
+    .logo {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: 10px;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+    }
+    .logo em { color: var(--accent); font-style: normal; text-shadow: 0 0 15px rgba(0,255,65,0.6); }
+    .sub {
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+    .hint {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.55;
+      margin-bottom: 28px;
+    }
+    .key-wrap {
+      position: relative;
+      margin-bottom: 16px;
+    }
+    .key-input {
+      width: 100%;
+      padding: 18px 14px;
+      background: rgba(0,255,65,0.04);
+      border: 1.5px solid rgba(0,255,65,0.2);
+      border-radius: 4px;
+      color: var(--text);
+      font-size: 30px;
+      font-weight: 700;
+      font-family: 'Courier New', monospace;
+      text-align: center;
+      letter-spacing: 10px;
+      text-transform: uppercase;
+      outline: none;
+      transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+      caret-color: var(--accent);
+    }
+    .key-input::placeholder {
+      color: rgba(26,90,26,0.5);
+      letter-spacing: 6px;
+      font-size: 20px;
+    }
+    .key-input:focus {
+      border-color: var(--accent);
+      background: rgba(0,255,65,0.08);
+      box-shadow: 0 0 0 3px rgba(0,255,65,0.15), 0 0 20px rgba(0,255,65,0.2);
+    }
+    .err {
+      font-size: 12px;
+      color: #ff0040;
+      min-height: 18px;
+      margin-bottom: 14px;
+    }
+    .btn {
+      width: 100%;
+      padding: 14px;
+      background: var(--accent);
+      color: #000;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 3px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: opacity 0.15s, transform 0.1s;
+      text-transform: uppercase;
+      box-shadow: 0 0 20px rgba(0,255,65,0.4);
+    }
+    .btn:hover  { opacity: 0.88; }
+    .btn:active { transform: scale(0.98); }
+    @keyframes shake {
+      0%,100% { transform: translateX(0); }
+      20%,60% { transform: translateX(-7px); }
+      40%,80% { transform: translateX(7px); }
+    }
+    .shake { animation: shake 0.35s ease; }
+    .voice-note {
+      font-size: 10px;
+      color: var(--muted);
+      margin-top: 20px;
+      line-height: 1.6;
+      text-align: left;
+    }
+    .voice-note code {
+      background: rgba(0,255,65,0.06);
+      padding: 1px 4px;
+      border-radius: 2px;
+      font-family: 'Courier New', monospace;
+      font-size: 9px;
+      border: 1px solid rgba(0,255,65,0.1);
+    }
+    #reconnecting {
+      display: none;
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 16px;
+    }
+    /* ── SCANLINE EFFECT ── */
+    body::after {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: repeating-linear-gradient(
+        0deg,
+        rgba(0,0,0,0.15),
+        rgba(0,0,0,0.15) 1px,
+        transparent 1px,
+        transparent 2px
+      );
+      pointer-events: none;
+      z-index: 9999;
+      opacity: 0.3;
+    }
+
+    /* ── GLOW EFFECTS ── */
+    @keyframes text-glow {
+      0%, 100% { text-shadow: 0 0 5px rgba(0,255,65,0.5), 0 0 10px rgba(0,255,65,0.3); }
+      50% { text-shadow: 0 0 10px rgba(0,255,65,0.8), 0 0 20px rgba(0,255,65,0.5); }
+    }
+
+    .logo em {
+      animation: text-glow 2s ease-in-out infinite;
+    }
+
+    /* ── ARC REACTOR OVERLAY ── */
+    #arc-overlay {
+      position: fixed; inset: 0; z-index: 10000;
+      background: #000;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      transition: opacity 1.2s ease-out;
+    }
+    #arc-overlay.fade-out { opacity: 0; pointer-events: none; }
+    .arc-reactor { width: 180px; height: 180px; position: relative; }
+    .arc-reactor svg { width: 100%; height: 100%; }
+    .arc-ring-outer { animation: arc-spin-outer 8s linear infinite; transform-origin: center; }
+    .arc-ring-inner { animation: arc-spin-inner 5s linear infinite; transform-origin: center; }
+    .arc-core { animation: arc-pulse 1.5s ease-in-out infinite; transform-origin: center; }
+    .arc-rays { animation: arc-spin-rays 12s linear infinite; transform-origin: center; }
+    @keyframes arc-spin-outer { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+    @keyframes arc-spin-inner { from{transform:rotate(0deg)} to{transform:rotate(-360deg)} }
+    @keyframes arc-pulse { 0%,100%{opacity:0.6;filter:drop-shadow(0 0 8px rgba(0,180,255,0.6))} 50%{opacity:1;filter:drop-shadow(0 0 25px rgba(0,180,255,1))} }
+    @keyframes arc-spin-rays { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+    .arc-glow {
+      position: absolute; inset: -25px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(0,180,255,0.15) 0%, transparent 70%);
+      animation: arc-glow-expand 2s ease-out forwards;
+    }
+    @keyframes arc-glow-expand { from{transform:scale(0.3);opacity:0} to{transform:scale(1.5);opacity:1} }
+    .arc-scanline {
+      position: absolute; width: 100%; height: 2px;
+      background: linear-gradient(90deg, transparent, rgba(0,180,255,0.5), transparent);
+      animation: arc-scan 2s ease-in-out 0.5s infinite;
+    }
+    @keyframes arc-scan { 0%{top:0%;opacity:0} 20%{opacity:1} 80%{opacity:1} 100%{top:100%;opacity:0} }
+    .arc-text {
+      margin-top: 24px; text-align: center;
+      font-family: 'Courier New', monospace; color: #00b4ff;
+    }
+    .arc-title {
+      font-size: 20px; font-weight: 700; letter-spacing: 10px; text-transform: uppercase;
+      text-shadow: 0 0 15px rgba(0,180,255,0.6), 0 0 30px rgba(0,180,255,0.3);
+      opacity: 0; animation: arc-text-in 0.6s ease-out 1.2s forwards;
+    }
+    .arc-subtitle {
+      font-size: 10px; letter-spacing: 4px; margin-top: 6px; color: rgba(0,180,255,0.5);
+      opacity: 0; animation: arc-text-in 0.5s ease-out 2s forwards;
+    }
+    @keyframes arc-text-in { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+  </style>
+</head>
+<body>
+  <!-- ARC REACTOR STARTUP -->
+  <div id="arc-overlay">
+    <div class="arc-reactor">
+      <div class="arc-glow"></div>
+      <div class="arc-scanline"></div>
+      <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <radialGradient id="coreGrad2" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#00e5ff" stop-opacity="1"/>
+            <stop offset="60%" stop-color="#0099cc" stop-opacity="0.8"/>
+            <stop offset="100%" stop-color="#004466" stop-opacity="0.3"/>
+          </radialGradient>
+          <filter id="ag2"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+          <filter id="ags2"><feGaussianBlur stdDeviation="6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+        </defs>
+        <g class="arc-ring-outer" filter="url(#ag2)">
+          <circle cx="100" cy="100" r="90" fill="none" stroke="#005577" stroke-width="1" opacity="0.3"/>
+          <circle cx="100" cy="100" r="85" fill="none" stroke="#0088aa" stroke-width="2" stroke-dasharray="8 18" opacity="0.6"/>
+          <circle cx="100" cy="100" r="80" fill="none" stroke="#00aacc" stroke-width="3" stroke-dasharray="15 25" opacity="0.5"/>
+          <g opacity="0.6">
+            <line x1="100" y1="10" x2="100" y2="20" stroke="#00ccee" stroke-width="2"/>
+            <line x1="100" y1="180" x2="100" y2="190" stroke="#00ccee" stroke-width="2"/>
+            <line x1="10" y1="100" x2="20" y2="100" stroke="#00ccee" stroke-width="2"/>
+            <line x1="180" y1="100" x2="190" y2="100" stroke="#00ccee" stroke-width="2"/>
+          </g>
+        </g>
+        <g class="arc-ring-inner" filter="url(#ag2)">
+          <circle cx="100" cy="100" r="55" fill="none" stroke="#0099cc" stroke-width="2.5" stroke-dasharray="12 8" opacity="0.7"/>
+          <g opacity="0.6">
+            <line x1="100" y1="45" x2="100" y2="55" stroke="#00ddff" stroke-width="2.5"/>
+            <line x1="55" y1="126" x2="63" y2="118" stroke="#00ddff" stroke-width="2.5"/>
+            <line x1="145" y1="126" x2="137" y2="118" stroke="#00ddff" stroke-width="2.5"/>
+          </g>
+        </g>
+        <g class="arc-rays" opacity="0.2">
+          <line x1="100" y1="100" x2="100" y2="0" stroke="#00ccee" stroke-width="0.8"/>
+          <line x1="100" y1="100" x2="200" y2="100" stroke="#00ccee" stroke-width="0.8"/>
+          <line x1="100" y1="100" x2="100" y2="200" stroke="#00ccee" stroke-width="0.8"/>
+          <line x1="100" y1="100" x2="0" y2="100" stroke="#00ccee" stroke-width="0.8"/>
+        </g>
+        <circle class="arc-core" cx="100" cy="100" r="18" fill="url(#coreGrad2)" filter="url(#ags2)"/>
+        <circle cx="100" cy="100" r="12" fill="#00e5ff" opacity="0.9" filter="url(#ags2)"/>
+        <circle cx="100" cy="100" r="6" fill="#ffffff" opacity="0.95"/>
+      </svg>
+    </div>
+    <div class="arc-text">
+      <div class="arc-title">N E M E S I S</div>
+      <div class="arc-subtitle">INITIALIZING SYSTEMS…</div>
+    </div>
+  </div>
+
+  <div class="card" id="card">
+    <div class="logo"><em>J</em>ARVIS</div>
+    <div class="sub">Remote Access</div>
+    <p id="reconnecting">Reconnecting…</p>
+    <p class="hint">Press <strong style="color:var(--text)">Remote Control</strong> in the NEMESIS desktop app to get a QR code or session key.</p>
+    <div class="key-wrap">
+      <input class="key-input" id="key" type="text" maxlength="6"
+             autocomplete="off" autocorrect="off" spellcheck="false"
+             placeholder="· · · · · ·">
+    </div>
+    <div class="err" id="err"></div>
+    <button class="btn" onclick="doLogin()">CONNECT</button>
+    <p class="voice-note">
+      🎤 <strong style="color:var(--text)">Voice commands:</strong> open
+      <code>chrome://flags</code> on your phone, search
+      <code>Insecure origins treated as secure</code>, add your NEMESIS URL, tap Relaunch.
+    </p>
+  </div>
+
+  <script>
+    // Try auto-reconnect with stored device token (set on first QR login)
+    (async function() {
+      const devTok = localStorage.getItem('nemesis_device_token');
+      if (!devTok) return;
+      document.getElementById('reconnecting').style.display = 'block';
+      try {
+        const r = await fetch('/api/device-login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ device_token: devTok }),
+        });
+        const d = await r.json();
+        if (d.ok && d.token) {
+          sessionStorage.setItem('nemesis_key', d.key);
+          sessionStorage.setItem('nemesis_token', d.token);
+          location.replace('/');
+          return;
+        }
+      } catch (_) {}
+      // Device token rejected (server restarted) — clear it and show normal form
+      localStorage.removeItem('nemesis_device_token');
+      document.getElementById('reconnecting').style.display = 'none';
+    })();
+
+    const inp = document.getElementById('key');
+    inp.focus();
+
+    inp.addEventListener('input', () => {
+      inp.value = inp.value.toUpperCase().replace(/[^A-Z2-9]/g, '');
+      if (inp.value.length === 6) doLogin();
+    });
+    inp.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+
+    async function doLogin() {
+      const key = inp.value.trim();
+      if (key.length < 6) { shake(); return; }
+      let data;
+      try {
+        const r = await fetch('/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ pin: key })
+        });
+        data = await r.json();
+      } catch (e) {
+        document.getElementById('err').textContent = 'Connection error';
+        shake(); return;
+      }
+      if (data.ok && data.token) {
+        sessionStorage.setItem('nemesis_key', key);
+        sessionStorage.setItem('nemesis_token', data.token);
+        location.href = '/';
+      } else {
+        inp.value = '';
+        inp.focus();
+        document.getElementById('err').textContent = 'Invalid or expired key';
+        shake();
+      }
+    }
+
+    function shake() {
+      const c = document.getElementById('card');
+      c.classList.remove('shake');
+      void c.offsetWidth;
+      c.classList.add('shake');
+    }
+
+    // ── ARC REACTOR STARTUP ────────────────────────────────────────────
+    (function() {
+      const overlay = document.getElementById('arc-overlay');
+      if (!overlay) return;
+      try {
+        const AC = window.AudioContext || window.webkitAudioContext;
+        const ctx = new AC();
+        const o1 = ctx.createOscillator();
+        const g1 = ctx.createGain();
+        o1.type = 'sine';
+        o1.frequency.setValueAtTime(60, ctx.currentTime);
+        o1.frequency.exponentialRampToValueAtTime(220, ctx.currentTime + 2.5);
+        g1.gain.setValueAtTime(0, ctx.currentTime);
+        g1.gain.linearRampToValueAtTime(0.15, ctx.currentTime + 0.5);
+        g1.gain.linearRampToValueAtTime(0, ctx.currentTime + 3.5);
+        o1.connect(g1).connect(ctx.destination);
+        o1.start(ctx.currentTime);
+        o1.stop(ctx.currentTime + 3.5);
+        const o2 = ctx.createOscillator();
+        const g2 = ctx.createGain();
+        o2.type = 'triangle';
+        o2.frequency.setValueAtTime(800, ctx.currentTime + 0.8);
+        o2.frequency.exponentialRampToValueAtTime(1600, ctx.currentTime + 2.0);
+        g2.gain.setValueAtTime(0, ctx.currentTime + 0.8);
+        g2.gain.linearRampToValueAtTime(0.05, ctx.currentTime + 1.2);
+        g2.gain.linearRampToValueAtTime(0, ctx.currentTime + 2.5);
+        o2.connect(g2).connect(ctx.destination);
+        o2.start(ctx.currentTime + 0.8);
+        o2.stop(ctx.currentTime + 2.8);
+      } catch(e) {}
+      setTimeout(() => {
+        overlay.classList.add('fade-out');
+        setTimeout(() => overlay.remove(), 1500);
+      }, 3500);
+    })();
+
+    // ── HUD time updater ──
+    setInterval(() => {
+      const t = new Date();
+      const el = document.getElementById('hud-time-login');
+      if (el) el.textContent = t.toLocaleTimeString('en-US', { hour12: false });
+    }, 1000);
+  </script>
+
+  <!-- IRON MAN HUD OVERLAY (login) -->
+  <div id="hud-overlay" style="position:fixed;inset:0;z-index:9998;pointer-events:none;overflow:hidden;">
+    <div style="position:absolute;top:12px;left:12px;width:50px;height:50px;border-top:2px solid rgba(0,200,255,0.2);border-left:2px solid rgba(0,200,255,0.2);"></div>
+    <div style="position:absolute;top:12px;right:12px;width:50px;height:50px;border-top:2px solid rgba(0,200,255,0.2);border-right:2px solid rgba(0,200,255,0.2);"></div>
+    <div style="position:absolute;bottom:12px;left:12px;width:50px;height:50px;border-bottom:2px solid rgba(0,200,255,0.2);border-left:2px solid rgba(0,200,255,0.2);"></div>
+    <div style="position:absolute;bottom:12px;right:12px;width:50px;height:50px;border-bottom:2px solid rgba(0,200,255,0.2);border-right:2px solid rgba(0,200,255,0.2);"></div>
+    <div style="position:absolute;top:14px;left:50%;transform:translateX(-50%);font-family:'Courier New',monospace;font-size:8px;letter-spacing:2px;color:rgba(0,200,255,0.3);text-transform:uppercase;">
+      NEMESIS MARK XL <span style="color:rgba(0,200,255,0.15)">|</span> <span id="hud-time-login">--:--:--</span>
+    </div>
+    <div style="position:absolute;bottom:14px;left:50%;transform:translateX(-50%);font-family:'Courier New',monospace;font-size:7px;letter-spacing:3px;color:rgba(0,200,255,0.2);">SECURE ACCESS TERMINAL</div>
+  </div>
+</body>
+</html>

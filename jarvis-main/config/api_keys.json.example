@@ -1,0 +1,18 @@
+﻿{
+    "gemini_api_key": "YOUR_GEMINI_API_KEY_HERE",
+    "os_system": "windows",
+    "camera_index": 0,
+    "llm_provider": "ollama",
+    "llm_model": "llama3.2",
+    "llm_url": "http://localhost:11434",
+    "plugins_enabled": {
+        "whatsapp_monitor": true,
+        "whatsapp_voice_bridge": true
+    },
+    "assistant_name": "NEMESIS",
+    "user_name": "SOHIL",
+    "ui_color": "#00ff41",
+    "tts_engine": "edgetts",
+    "tts_voice": "en-US-GuyNeural",
+    "jarvis_effect": false
+}
